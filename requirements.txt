@@ -1,0 +1,4 @@
+# This port scanner uses the Python nmap module.
+# You'll need to install the following to get it work on Linux:
+# Step 1: sudo apt install python3-pip
+# Step 2: pip install python-nmap
