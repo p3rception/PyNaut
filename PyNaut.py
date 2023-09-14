@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
+#
+# Author: Dimitris Pergelidis (p3rception)
 
 import nmap
 import re
 import argparse
 
 def validate_ip(ip):
+    # Regular Expression Pattern to recognise IPv4 addresses.
     ip_pattern = re.compile(r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")
     return ip_pattern.match(ip)
 
 def validate_port_range(port_range):
+    # Regular Expression Pattern to validate port range input.
     port_range_pattern = re.compile(r"([0-9]+)-([0-9]+)")
     match = port_range_pattern.match(port_range.replace(" ", ""))
     if match:
@@ -35,15 +39,18 @@ def scan_ports(target_ip, port_min, port_max):
     return open_ports
 
 def main():
+    # Define command-line arguments for the target IP and port range.
     parser = argparse.ArgumentParser(description="Simple port scanner using python-nmap")
     parser.add_argument("target_ip", nargs="?", help="Target IP address to scan")
     parser.add_argument("port_range", nargs="?", help="Port range to scan in format <int>-<int>")
 
     args = parser.parse_args()
 
+    # Prompts the user for target_ip if the argument is empty.
     while args.target_ip is None or not validate_ip(args.target_ip):
         args.target_ip = input("Please enter a valid IP address that you want to scan: ")
 
+    # Prompts the user for port_range if the argument is empty.
     while args.port_range is None:
         port_range_input = input("Please enter the port range to scan in format <int>-<int> (e.g. 80-100): ")
         port_min, port_max = validate_port_range(port_range_input)
@@ -57,6 +64,7 @@ def main():
     print(f"Scanning ports {port_min}-{port_max} on {args.target_ip}...")
     open_ports = scan_ports(args.target_ip, port_min, port_max)
 
+    # Print scan summary.
     if open_ports:
         print(f"Open ports on {args.target_ip}: {', '.join(map(str, open_ports))}")
     else:
