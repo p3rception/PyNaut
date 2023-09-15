@@ -140,27 +140,27 @@ def main():
     
     # Prompts the user for target_ip if the argument is empty.
     while args.target_ip is None or not validate_ip(args.target_ip):
-        args.target_ip = input(f"[{INPUT}] Please enter a valid {BOLD}IP address{END} that you want to scan: ")
+        args.target_ip = input(f"{END}[{INPUT}] Please enter a valid {BOLD}IP address{END} that you want to scan: {MAIN}")
 
     # Prompts the user for port_range if the argument is empty.
     while args.port_range is None:
-        port_range_input = input(f"\n[{INPUT}] Please enter the {BOLD}port range{END} to scan in format <int>-<int> (e.g. 80-100): ")
+        port_range_input = input(f"\n{END}[{INPUT}] Please enter the {BOLD}port range{END} to scan in format <int>-<int> (e.g. 80-100): {MAIN}")
         port_min, port_max = validate_port_range(port_range_input)
         if port_min is not None and port_max is not None:
             args.port_range = f"{port_min}-{port_max}"
         else:
-            print("Invalid port range format. Please provide a valid range (e.g. 80-100).")
+            print(f"\n{END}[{WARN}] Invalid port range format. Please provide a valid range [0-65535].")
 
     port_min, port_max = validate_port_range(args.port_range)
 
-    print(f"Scanning ports {port_min}-{port_max} on {args.target_ip}...")
+    print(f"\n{END}[{INFO}] Scanning ports {port_min}-{port_max} on {args.target_ip}...\n")
     open_ports = scan_ports(args.target_ip, port_min, port_max)
 
     # Print scan summary.
     if open_ports:
-        print(f"[{INFO}] Open ports on {args.target_ip}: {', '.join(map(str, open_ports))}")
+        print(f"\n[{INFO}] Open ports on {args.target_ip}: {BOLD}{', '.join(map(str, open_ports))}{END}")
     else:
-        print(f"[{INFO}] No open ports found on {args.target_ip}.")
+        print(f"\n[{INFO}] No open ports found on {args.target_ip}.")
 
 if __name__ == "__main__":
     main()

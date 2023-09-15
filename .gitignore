@@ -128,7 +128,9 @@ pyrightconfig.json
 
 # Others
 TODO.md
-test.py
+**/test*
+**/Test*
+
 
 ### VisualStudioCode ###
 .vscode/*
