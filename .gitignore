@@ -130,6 +130,7 @@ pyrightconfig.json
 TODO.md
 **/test*
 **/Test*
+**/Backup*
 
 
 ### VisualStudioCode ###

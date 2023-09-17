@@ -7,8 +7,6 @@ import re
 import argparse
 from time import sleep
 import shutil
-
-import concurrent.futures
 import threading
 
 # ---------------- Colors ---------------- #
