@@ -57,7 +57,6 @@ def print_banner():
 
    print('\r')
    padding = '  '
-   end = '\001\033[0m\002'
 
 
    P = [['┌', '─','┐'], ['├', '─', '┘'],['┴', ' ', ' ']]
@@ -90,7 +89,7 @@ def print_banner():
       if charset < 2:
          final.append('\n   ')
 
-   print(f"   {''.join(final)}{end}")
+   print(f"   {''.join(final)}{END}")
    haxor_print('by p3rception', 17)
 
    # Dynamic horizontal line
