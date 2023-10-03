@@ -189,4 +189,8 @@ def main():
       print(f"\n[{INFO}] No open ports found on {args.target_ip}.")
 
 if __name__ == "__main__":
-   main()
+   try:
+      main()
+   except KeyboardInterrupt:
+      print("\nGoodbye!")
+      quit()
