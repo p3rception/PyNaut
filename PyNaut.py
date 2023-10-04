@@ -2,17 +2,17 @@
 #
 # Author: Dimitris Pergelidis (p3rception)
 
-import nmap
-import re
-import argparse
 from time import sleep
 import shutil
 import threading
+import socket
+from queue import Queue
+
 
 # ---------------- Colors ---------------- #
 
 MAIN = '\033[38;5;50m'
-PLOAD = '\033[38;5;119m'
+LGREEN = '\033[38;5;119m'
 GREEN = '\033[38;5;47m'
 BLUE = '\033[0;38;5;12m'
 ORANGE = '\033[0;38;5;214m'
@@ -23,18 +23,11 @@ BOLD = '\033[1m'
 # ----------- Message Prefixes ----------- #
 
 INPUT = f'{MAIN}Input{END}'
-WARN = f'{ORANGE}Warning{END}'
+WARN = f'{RED}Warning{END}'
 INFO = f'{ORANGE}Info{END}'
 ERROR = f'{RED}Error{END}'
-DEBUG = f'{ORANGE}Debug{END}'
+SUMMARY = f'{LGREEN}Summary{END}'
 
-# -------------- Arguments -------------- #
-
-parser = argparse.ArgumentParser(description="Simple port scanner using python-nmap")
-parser.add_argument("target_ip", nargs="?", help="Target IP address to scan")
-parser.add_argument("port_range", nargs="?", help="Port range to scan in format <int>-<int>")
-
-args = parser.parse_args()
 
 # ---------------- Banner ---------------- #
 
@@ -54,10 +47,8 @@ def haxor_print(text, leading_spaces=0):
    print(f'\r{" " * leading_spaces}{text}\n')
 
 def print_banner(): 
-
    print('\r')
    padding = '  '
-
 
    P = [['┌', '─','┐'], ['├', '─', '┘'],['┴', ' ', ' ']]
    Y = [[' ', '┬', ' ','┬'], [' ', '└', '┬', '┘'],[' ', ' ', '┴', ' ']]
@@ -101,96 +92,87 @@ def print_banner():
 
 # -------------- Main functions -------------- #
 
-def validate_ip(ip):
-   # Regular Expression Pattern to recognise IPv4 addresses.
-   ip_pattern = re.compile(r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")
-   return ip_pattern.match(ip)
-
-def validate_port_range(port_range):
-   # Regular Expression Pattern to validate port range input.
-   port_range_pattern = re.compile(r"([0-9]+)-([0-9]+)")
-   match = port_range_pattern.match(port_range.replace(" ", ""))
-   if match:
-      port_min = int(match.group(1))
-      port_max = int(match.group(2))
-      if 0 <= port_min <= port_max <= 65535:
+def validate_port_range(port_range_input):
+   try:
+      port_min, port_max = map(int, port_range_input.split('-'))
+      if 0 <= port_min <= 65535 and 0 <= port_max <= 65535 and port_min <= port_max:
          return port_min, port_max
-   return None, None
-
-def scan_ports(target_ip, port_min, port_max):
-   open_ports = []
-   nm = nmap.PortScanner()
-
-   # Create a list to store results
-   results = []
-   
-   # Function to scan a single port
-   def scan_single_port(port):
-      try:
-            result = nm.scan(target_ip, str(port))
-            port_status = result['scan'][target_ip]['tcp'][port]['state']
-            if port_status == 'open':
-               open_ports.append(port)
-            results.append((port, port_status))
-      except nmap.PortScannerError as e:
-            results.append((port, str(e)))
-
-         
-
-   # Create and start threads for scanning
-   threads = []
-   for port in range(port_min, port_max + 1):
-      thread = threading.Thread(target=scan_single_port, args=(port,))
-      threads.append(thread)
-      thread.start()
-
-   # Wait for all threads to finish
-   for thread in threads:
-      thread.join()
-
-   # Sort the results by port number
-   results.sort(key=lambda x: x[0])
-
-   # Print the sorted results
-   for port, port_status in results:
-      if port_status == 'open':
-         print(f"[{GREEN}✔{END}] Port {port} is {port_status}")
       else:
-         print(f"[{RED}✘{END}] Port {port} is {port_status}")
+         return None, None # Return None for invalid range
+   except ValueError:
+      return None, None # Return None for invalid input format
 
-   return open_ports
+def scan_port(target_ip, port, print_lock, open_ports):
+   s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   try:
+      # Attempt to connect to the target IP and port
+      portx = s.connect((target_ip, port))
+      with print_lock:
+         print(f"{END}[{GREEN}✔{END}] Port {port} is open")
+         open_ports.append(str(port))
+      portx.close()
+   except (ConnectionRefusedError, AttributeError, OSError):
+      pass
+
+def threader(q, target_ip, print_lock, open_ports):
+   while True:
+      worker = q.get()
+      scan_port(target_ip, worker, print_lock, open_ports)
+      q.task_done()
 
 
 def main():
    print_banner()
    
-   # Prompts the user for target_ip if the argument is empty.
-   while args.target_ip is None or not validate_ip(args.target_ip):
-      args.target_ip = input(f"{END}[{INPUT}] Please enter a valid {BOLD}IP address{END} that you want to scan: {MAIN}")
+   # Less than 2 seconds increases the risk of false negatives
+   socket.setdefaulttimeout(2)
+   print_lock = threading.Lock()
+   open_ports = []
 
-   # Prompts the user for port_range if the argument is empty.
-   while args.port_range is None:
-      port_range_input = input(f"\n{END}[{INPUT}] Please enter the {BOLD}port range{END} to scan in format <int>-<int> (e.g. 80-100): {MAIN}")
+   while True:
+      target = input(f"{END}[{INPUT}] Please enter a valid {BOLD}IP address{END} or {BOLD}URL{END}: {MAIN}").strip()
+
+      try:
+         target_ip = socket.gethostbyname(target)
+         break # Break if a valid address is obtained
+      except (UnboundLocalError, socket.gaierror):
+         print(f"\n{END}[{WARN}] Invalid format. Please use a correct IP or Web Address.\n")
+
+   while True:
+      port_range_input = input(f"\n{END}[{INPUT}] Please enter the {BOLD}port range{END} to scan in valid format [e.g 0-100]: {MAIN}")
       port_min, port_max = validate_port_range(port_range_input)
+      
       if port_min is not None and port_max is not None:
-         args.port_range = f"{port_min}-{port_max}"
+         port_range = f"{port_min}-{port_max}"
+         start_port, end_port = map(int, port_range.split('-'))
+         break  # Break if a valid port range is obtained
       else:
          print(f"\n{END}[{WARN}] Invalid port range format. Please provide a valid range [0-65535].")
 
-   port_min, port_max = validate_port_range(args.port_range)
+   q = Queue()
 
-   print(f"\n{END}[{INFO}] Scanning ports {port_min}-{port_max} on {args.target_ip}...\n")
-   open_ports = scan_ports(args.target_ip, port_min, port_max)
+   for i in range(200):
+      t = threading.Thread(target=threader, args=(q, target_ip, print_lock, open_ports))
+      t.daemon = True
+      t.start()
 
-   # Print scan summary.
+   print(f"\n{END}[{INFO}] Scanning ports {port_min}-{port_max} on {target_ip}\n")
+
+   for worker in range(start_port, end_port + 1):
+      q.put(worker)
+   
+   q.join()
+
+   # Scan summary
    if open_ports:
-      print(f"\n[{INFO}] Open ports on {args.target_ip}: {BOLD}{', '.join(map(str, open_ports))}{END}")
+      print(f"\n{END}[{SUMMARY}] Open ports on {target_ip}: {BOLD}{', '.join(map(str, open_ports))}{END}")
    else:
-      print(f"\n[{INFO}] No open ports found on {args.target_ip}.")
+      print(f"{END}[{SUMMARY}] No open ports found on {target_ip}")
 
 if __name__ == "__main__":
+
    try:
       main()
    except KeyboardInterrupt:
-      print("\nGoodbye!")
+      print(f"\n{END}[{INFO}] PyNaut was terminated.")
       quit()

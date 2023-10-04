@@ -132,6 +132,9 @@ TODO.md
 **/Test*
 **/Backup*
 
+# Symlinks
+pynaut
+pynaut-dev
 
 ### VisualStudioCode ###
 .vscode/*
