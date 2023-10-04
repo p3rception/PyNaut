@@ -170,7 +170,6 @@ def main():
       print(f"{END}[{SUMMARY}] No open ports found on {target_ip}")
 
 if __name__ == "__main__":
-
    try:
       main()
    except KeyboardInterrupt:
