@@ -19,7 +19,7 @@ PyNaut is a simple Python port scanner designed to scan a range of ports on a ta
 
 1. Clone or download this repository to your local machine.
   
-2. Run the script using Python 3
+2. Run the script using Python 3.
 
 
 ## Usage
@@ -36,18 +36,25 @@ PyNaut is a simple Python port scanner designed to scan a range of ports on a ta
 
 ## Example
 
-```plaintext
-[Input] Please enter a valid IP address or URL: example.com
+<pre>
+┌─┐ ┬ ┬ ┌┐┌ ┌─┐ ┬ ┬ ┌┬┐
+├─┘ └┬┘ │││ ├─┤ │ │  │
+┴    ┴  ┘└┘ ┴ ┴ └─┘  ┴
+              by p3rception
 
-[Input] Please enter the port range to scan in valid format [e.g 0-100]: 80-100
 
-[Info] Scanning ports 80-100 on example.com
+<b>[Input]</b> Please enter a valid IP address or URL: <em>example.com</em>
+
+<b>[Input]</b> Please enter the port range to scan in valid format [e.g 0-100]: <em>0-500</em>
+
+<b>[Info]</b> Scanning ports 0-500 on example.com
 
 [✔] Port 80 is open
-[✔] Port 88 is open
+[✔] Port 443 is open
 
-[Summary] Open ports on example.com: 80, 88
-```
+<b>[Summary]</b> Open ports on example.com: 80, 443
+</pre>
+
 ## Author
 
 Dimitris Pergelidis ([p3rception](https://github.com/p3rception))
