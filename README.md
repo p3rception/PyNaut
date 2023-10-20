@@ -1,4 +1,5 @@
-# PyNaut - Python Port Scanner
+<img src="https://i.imgur.com/0wNZnny.png" width=300>
+<hr>
 
 PyNaut is a simple Python port scanner designed to scan a range of ports on a target IP address or URL to detect open ports. It utilizes multi-threading for faster scanning.
 
