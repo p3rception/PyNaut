@@ -38,11 +38,6 @@ PyNaut is a simple Python port scanner designed to scan a range of ports on a ta
 ## Example
 
 <pre>
-┌─┐ ┬ ┬ ┌┐┌ ┌─┐ ┬ ┬ ┌┬┐
-├─┘ └┬┘ │││ ├─┤ │ │  │
-┴    ┴  ┘└┘ ┴ ┴ └─┘  ┴
-              by p3rception
-
 
 <b>[Input]</b> Please enter a valid IP address or URL: <em>example.com</em>
 
