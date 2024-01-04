@@ -57,6 +57,8 @@ def print_banner():
    U = [[' ', '┬', ' ','┬'], [' ', '│', ' ', '│'],[' ', '└', '─', '┘']]
    T = [[' ', '┌', '┬','┐'], [' ', ' ', '│', ' '],[' ', ' ', '┴', ' ']]
 
+  
+
    banner = [P,Y,N,A,U,T]
    final = []
    init_color = 43
@@ -93,6 +95,8 @@ def print_banner():
 # -------------- Main functions -------------- #
 
 def validate_port_range(port_range_input):
+   if port_range_input.lower() == "all":
+      return 0, 65535
    try:
       port_min, port_max = map(int, port_range_input.split('-'))
       if 0 <= port_min <= 65535 and 0 <= port_max <= 65535 and port_min <= port_max:
